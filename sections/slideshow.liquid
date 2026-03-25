@@ -1,0 +1,513 @@
+{%- liquid
+  assign show_controls = section.settings.show_controls
+  assign autoplay = section.settings.autoplay_delay | times: 1000
+-%}
+
+<style>
+  /* ===== FIX PARA ANCHO DEL CONTENEDOR ===== */
+  #shopify-section-{{ section.id }} .page-width--full {
+    max-width: 100%;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  #shopify-section-{{ section.id }} .page-width--fixed {
+    max-width: {{ settings.page_width | default: 1200 }}px;
+    margin: 0 auto;
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  @media screen and (min-width: 768px) {
+    #shopify-section-{{ section.id }} .page-width--fixed {
+      padding-left: 40px;
+      padding-right: 40px;
+    }
+  }
+
+  /* ===== ESTILOS DEL SLIDESHOW ===== */
+  .corpi-slideshow {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    background: #f5f5f5;
+  }
+
+  .corpi-slideshow__wrapper {
+    position: relative;
+    width: 100%;
+  }
+
+  .corpi-slideshow__slide {
+    position: relative;
+    width: 100%;
+    display: none;
+  }
+
+  .corpi-slideshow__slide.active {
+    display: block;
+  }
+
+  /* ===== DESKTOP: Imagen se adapta a su tamaño natural ===== */
+  @media screen and (min-width: 768px) {
+    .corpi-slideshow__slide {
+      height: auto;
+    }
+
+    .corpi-slideshow__image-wrapper {
+      position: relative;
+      width: 100%;
+      height: auto;
+      line-height: 0;
+    }
+
+    .corpi-slideshow__image-wrapper img {
+      width: 100%;
+      height: auto;
+      display: block;
+      max-height: none;
+    }
+  }
+
+  /* ===== MOBILE: Adaptativo ===== */
+  @media screen and (max-width: 767px) {
+    .corpi-slideshow__slide {
+      height: auto;
+      aspect-ratio: var(--mobile-aspect-ratio, 16/9);
+    }
+
+    .corpi-slideshow__image-wrapper {
+      position: relative;
+      width: 100%;
+      aspect-ratio: var(--mobile-aspect-ratio, 16/9);
+    }
+
+    .corpi-slideshow__image-wrapper img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center top;
+    }
+  }
+
+  /* Link wrapper */
+  .corpi-slideshow__link {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+  }
+
+  /* ===== CONTROLES ===== */
+  .corpi-slideshow__controls {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    z-index: 10;
+  }
+
+  @media screen and (max-width: 767px) {
+    .corpi-slideshow__controls {
+      bottom: 15px;
+      gap: 12px;
+    }
+  }
+
+  .corpi-slideshow__arrow {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.95);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+
+  @media screen and (max-width: 767px) {
+    .corpi-slideshow__arrow {
+      width: 36px;
+      height: 36px;
+    }
+  }
+
+  .corpi-slideshow__arrow:hover {
+    background: white;
+    transform: scale(1.1);
+  }
+
+  .corpi-slideshow__arrow svg {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: #333;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  @media screen and (max-width: 767px) {
+    .corpi-slideshow__arrow svg {
+      width: 16px;
+      height: 16px;
+    }
+  }
+
+  .corpi-slideshow__dots {
+    display: flex;
+    gap: 10px;
+  }
+
+  @media screen and (max-width: 767px) {
+    .corpi-slideshow__dots {
+      gap: 8px;
+    }
+  }
+
+  .corpi-slideshow__dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.6);
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  @media screen and (max-width: 767px) {
+    .corpi-slideshow__dot {
+      width: 10px;
+      height: 10px;
+    }
+  }
+
+  .corpi-slideshow__dot.active {
+    background: white;
+    transform: scale(1.2);
+    border-color: rgba(0,0,0,0.1);
+  }
+
+  /* ===== PLACEHOLDER ===== */
+  .corpi-slideshow__placeholder {
+    width: 100%;
+    height: 300px;
+    background: linear-gradient(135deg, #2E7D32 0%, #43A047 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.2rem;
+    font-family: 'Montserrat', sans-serif;
+  }
+
+  @media screen and (max-width: 767px) {
+    .corpi-slideshow__placeholder {
+      aspect-ratio: 16/9;
+      height: auto;
+    }
+  }
+</style>
+
+<div
+  class="section section-{{ section.id }} page-width--{{ section.settings.container }}"
+  data-id="{{ section.id }}"
+>
+  <div 
+    class="corpi-slideshow"
+    data-autoplay="{{ autoplay }}"
+    data-show-controls="{{ show_controls }}"
+  >
+    <div class="corpi-slideshow__wrapper">
+      {%- for block in section.blocks -%}
+        {%- liquid
+          assign background_default = block.settings.background
+          assign background_mobile = block.settings.background_mobile
+          assign button_link = block.settings.button_link
+          
+          if background_default == blank and background_mobile != blank
+            assign background_default = background_mobile
+          endif
+          
+          assign mobile_ratio = '16/9'
+          if background_mobile != blank and background_mobile.aspect_ratio != blank
+            assign mobile_ratio = background_mobile.aspect_ratio
+          endif
+        -%}
+        
+        <div 
+          class="corpi-slideshow__slide{% if forloop.first %} active{% endif %}"
+          data-index="{{ forloop.index0 }}"
+          style="{% if forloop.first %}--mobile-aspect-ratio: {{ mobile_ratio }};{% endif %}"
+          data-mobile-ratio="{{ mobile_ratio }}"
+          {{ block.shopify_attributes }}
+        >
+          {%- if button_link != blank -%}
+            <a href="{{ button_link }}" class="corpi-slideshow__link" aria-label="Ver más"></a>
+          {%- endif -%}
+          
+          <div class="corpi-slideshow__image-wrapper">
+            {%- if background_default != blank -%}
+              <picture>
+                {%- if background_mobile != blank -%}
+                  <source
+                    media="(max-width: 767px)"
+                    srcset="{{ background_mobile | image_url: width: 400 }} 400w,
+                            {{ background_mobile | image_url: width: 600 }} 600w,
+                            {{ background_mobile | image_url: width: 800 }} 800w,
+                            {{ background_mobile | image_url: width: 1000 }} 1000w"
+                    sizes="100vw"
+                  >
+                {%- endif -%}
+                <img
+                  src="{{ background_default | image_url: width: 1920 }}"
+                  srcset="{{ background_default | image_url: width: 600 }} 600w,
+                          {{ background_default | image_url: width: 1000 }} 1000w,
+                          {{ background_default | image_url: width: 1500 }} 1500w,
+                          {{ background_default | image_url: width: 1920 }} 1920w,
+                          {{ background_default | image_url: width: 2500 }} 2500w"
+                  sizes="{% if section.settings.container == 'full' %}100vw{% else %}min({{ settings.page_width }}, 100vw){% endif %}"
+                  alt="{{ background_default.alt | default: shop.name | escape }}"
+                  loading="{% if forloop.first %}eager{% else %}lazy{% endif %}"
+                  width="{{ background_default.width }}"
+                  height="{{ background_default.height }}"
+                  decoding="{% if forloop.first %}sync{% else %}async{% endif %}"
+                >
+              </picture>
+            {%- else -%}
+              <div class="corpi-slideshow__placeholder">
+                <span>Sube una imagen para el banner</span>
+              </div>
+            {%- endif -%}
+          </div>
+        </div>
+      {%- endfor -%}
+    </div>
+
+    {%- if section.blocks.size > 1 and show_controls -%}
+      <div class="corpi-slideshow__controls">
+        <button class="corpi-slideshow__arrow corpi-slideshow__arrow--prev" aria-label="Anterior">
+          <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        
+        <div class="corpi-slideshow__dots">
+          {%- for block in section.blocks -%}
+            <button class="corpi-slideshow__dot{% if forloop.first %} active{% endif %}" data-index="{{ forloop.index0 }}" aria-label="Slide {{ forloop.index }}"></button>
+          {%- endfor -%}
+        </div>
+        
+        <button class="corpi-slideshow__arrow corpi-slideshow__arrow--next" aria-label="Siguiente">
+          <svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+      </div>
+    {%- endif -%}
+  </div>
+</div>
+
+<script>
+  (function() {
+    'use strict';
+    
+    function initSlideshows() {
+      var slideshows = document.querySelectorAll('.corpi-slideshow');
+      
+      slideshows.forEach(function(slideshow) {
+        var slides = slideshow.querySelectorAll('.corpi-slideshow__slide');
+        var dots = slideshow.querySelectorAll('.corpi-slideshow__dot');
+        var prevBtn = slideshow.querySelector('.corpi-slideshow__arrow--prev');
+        var nextBtn = slideshow.querySelector('.corpi-slideshow__arrow--next');
+        var autoplayDelay = parseInt(slideshow.dataset.autoplay) || 0;
+        
+        if (slides.length <= 1) return;
+        
+        var currentIndex = 0;
+        var autoplayInterval;
+        var touchStartX = 0;
+        var touchEndX = 0;
+        
+        function showSlide(index) {
+          var currentSlide = slides[currentIndex];
+          var nextSlide = slides[index];
+          
+          if (currentSlide && nextSlide) {
+            var ratio = currentSlide.getAttribute('data-mobile-ratio');
+            nextSlide.style.setProperty('--mobile-aspect-ratio', ratio);
+          }
+          
+          slides.forEach(function(slide, i) {
+            slide.classList.toggle('active', i === index);
+          });
+          
+          dots.forEach(function(dot, i) {
+            dot.classList.toggle('active', i === index);
+          });
+          
+          currentIndex = index;
+        }
+        
+        function nextSlide() {
+          var next = (currentIndex + 1) % slides.length;
+          showSlide(next);
+        }
+        
+        function prevSlide() {
+          var prev = (currentIndex - 1 + slides.length) % slides.length;
+          showSlide(prev);
+        }
+        
+        if (prevBtn) prevBtn.addEventListener('click', prevSlide);
+        if (nextBtn) nextBtn.addEventListener('click', nextSlide);
+        
+        dots.forEach(function(dot, index) {
+          dot.addEventListener('click', function() {
+            showSlide(index);
+          });
+        });
+        
+        slideshow.addEventListener('touchstart', function(e) {
+          touchStartX = e.changedTouches[0].screenX;
+        }, {passive: true});
+        
+        slideshow.addEventListener('touchend', function(e) {
+          touchEndX = e.changedTouches[0].screenX;
+          handleSwipe();
+        }, {passive: true});
+        
+        function handleSwipe() {
+          var swipeThreshold = 50;
+          var diff = touchStartX - touchEndX;
+          
+          if (Math.abs(diff) > swipeThreshold) {
+            if (diff > 0) {
+              nextSlide();
+            } else {
+              prevSlide();
+            }
+          }
+        }
+        
+        if (autoplayDelay > 0) {
+          autoplayInterval = setInterval(nextSlide, autoplayDelay);
+          
+          slideshow.addEventListener('mouseenter', function() {
+            clearInterval(autoplayInterval);
+          });
+          
+          slideshow.addEventListener('mouseleave', function() {
+            autoplayInterval = setInterval(nextSlide, autoplayDelay);
+          });
+          
+          slideshow.addEventListener('touchstart', function() {
+            clearInterval(autoplayInterval);
+          }, {passive: true});
+        }
+      });
+    }
+    
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initSlideshows);
+    } else {
+      initSlideshows();
+    }
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Banner Slideshow",
+  "disabled_on": {
+    "groups": ["header", "footer", "custom.overlay"]
+  },
+  "max_blocks": 6,
+  "settings": [
+    {
+      "type": "select",
+      "id": "container",
+      "options": [
+        {
+          "value": "full",
+          "label": "Ancho completo"
+        },
+        {
+          "value": "fixed",
+          "label": "Contenedor fijo"
+        }
+      ],
+      "default": "full",
+      "label": "Ancho del contenedor"
+    },
+    {
+      "type": "paragraph",
+      "content": "Desktop: La imagen se muestra en su tamaño natural. Sube imágenes de 1920px de ancho."
+    },
+    {
+      "type": "paragraph",
+      "content": "Mobile: Se adapta automáticamente al ratio de la imagen mobile."
+    },
+    {
+      "type": "header",
+      "content": "Carrusel"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_controls",
+      "label": "Mostrar controles (flechas y puntos)",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "autoplay_delay",
+      "label": "Autoplay (0 = desactivado)",
+      "max": 10,
+      "min": 0,
+      "step": 1,
+      "unit": "s",
+      "default": 0
+    }
+  ],
+  "blocks": [
+    {
+      "type": "slide",
+      "name": "Slide de imagen",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "background",
+          "label": "Imagen Desktop",
+          "info": "Recomendado: 1920px de ancho. La altura se adapta automáticamente."
+        },
+        {
+          "type": "image_picker",
+          "id": "background_mobile",
+          "label": "Imagen Mobile",
+          "info": "Se adapta al ratio de esta imagen."
+        },
+        {
+          "type": "url",
+          "id": "button_link",
+          "label": "Link del banner (opcional)"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Banner Slideshow",
+      "blocks": [
+        {
+          "type": "slide"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

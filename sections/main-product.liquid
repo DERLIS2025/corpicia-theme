@@ -1,0 +1,220 @@
+<product-info
+  id="MainProduct-{{ section.id }}"
+  class="section-{{ section.id }}-padding gradient color-{{ section.settings.color_scheme }}"
+  data-section="{{ section.id }}"
+  data-product-id="{{ product.id }}"
+  data-update-url="true"
+  data-url="{{ product.url }}"
+  {% if section.settings.image_zoom == 'hover' %}
+    data-zoom-on-hover
+  {% endif %}
+>
+  {{ 'section-main-product.css' | asset_url | stylesheet_tag }}
+  {{ 'component-accordion.css' | asset_url | stylesheet_tag }}
+  {{ 'component-price.css' | asset_url | stylesheet_tag }}
+  {{ 'component-slider.css' | asset_url | stylesheet_tag }}
+  {{ 'component-rating.css' | asset_url | stylesheet_tag }}
+  {{ 'component-deferred-media.css' | asset_url | stylesheet_tag }}
+
+  {% unless product.has_only_default_variant %}
+    {{ 'component-product-variant-picker.css' | asset_url | stylesheet_tag }}
+    {{ 'component-swatch-input.css' | asset_url | stylesheet_tag }}
+    {{ 'component-swatch.css' | asset_url | stylesheet_tag }}
+  {% endunless %}
+  {%- if product.quantity_price_breaks_configured? -%}
+    {{ 'component-volume-pricing.css' | asset_url | stylesheet_tag }}
+  {%- endif -%}
+
+  {%- style -%}
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+      padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+    }
+
+    @media screen and (min-width: 750px) {
+      .section-{{ section.id }}-padding {
+        padding-top: {{ section.settings.padding_top }}px;
+        padding-bottom: {{ section.settings.padding_bottom }}px;
+      }
+      /* CORRECCIÓN DE ESPACIO EN DESKTOP */
+      .product--medium:not(.product--no-media) .product__media-wrapper, 
+      .product--small:not(.product--no-media) .product__media-wrapper {
+        max-width: 50% !important;
+        width: 50% !important;
+      }
+    }
+  {%- endstyle -%}
+
+  <script src="{{ 'product-info.js' | asset_url }}" defer="defer"></script>
+  <script src="{{ 'product-form.js' | asset_url }}" defer="defer"></script>
+  {%- if product.quantity_price_breaks_configured? -%}
+    <script src="{{ 'show-more.js' | asset_url }}" defer="defer"></script>
+    <script src="{{ 'price-per-item.js' | asset_url }}" defer="defer"></script>
+  {%- endif -%}
+
+  {% if section.settings.image_zoom == 'hover' %}
+    <script id="EnableZoomOnHover-main" src="{{ 'magnify.js' | asset_url }}" defer="defer"></script>
+  {% endif %}
+  {%- if request.design_mode -%}
+    <script src="{{ 'theme-editor.js' | asset_url }}" defer="defer"></script>
+  {%- endif -%}
+
+  {%- assign first_3d_model = product.media | where: 'media_type', 'model' | first -%}
+  {%- if first_3d_model -%}
+    {{ 'component-product-model.css' | asset_url | stylesheet_tag }}
+    <link id="ModelViewerStyle" rel="stylesheet" href="https://cdn.shopify.com/shopifycloud/model-viewer-ui/assets/v1.0/model-viewer-ui.css" media="print" onload="this.media='all'">
+    <link id="ModelViewerOverride" rel="stylesheet" href="{{ 'component-model-viewer-ui.css' | asset_url }}" media="print" onload="this.media='all'">
+  {%- endif -%}
+
+  {% assign variant_images = product.images | where: 'attached_to_variant?', true | map: 'src' %}
+  
+  <div class="page-width">
+    <div class="product product--{{ section.settings.media_size }} product--{{ section.settings.media_position }} product--{{ section.settings.gallery_layout }} product--mobile-{{ section.settings.mobile_thumbnails }} grid grid--1-col {% if product.media.size > 0 %}grid--2-col-tablet{% else %}product--no-media{% endif %}">
+      
+     <div class="grid__item product__media-wrapper">
+  {%- comment -%} FORZAMOS MODO CARRUSEL EN RENDER {%- endcomment -%}
+  {% render 'product-media-gallery', 
+    variant_images: variant_images,
+    is_duplicate: false,
+    desktop_layout: 'thumbnail_slider',
+    mobile_layout: 'slider'
+  %}
+  
+  {%- comment -%} BLOQUE BENEFICIOS PRO - SOLO DESKTOP {%- endcomment -%}
+  <div class="product-benefits-pro desktop-only">
+    <div class="benefit-item">
+      <span class="icon">🚚</span>
+      <div class="benefit-content">
+        <strong>Trabajamos</strong>
+        <p>En todo el retorio de Paraguay</p>
+      </div>
+    </div>
+
+    <div class="benefit-item">
+      <span class="icon">✅</span>
+      <div class="benefit-content">
+        <strong>Garantía de satisfacción</strong>
+        <p>Productos verificados y probados</p>
+      </div>
+    </div>
+
+    <div class="benefit-item">
+      <span class="icon">📞</span>
+      <div class="benefit-content">
+        <strong>Soporte especializado</strong>
+        <p>Asesoramiento antes y después de comprar</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+      <div class="product__info-wrapper grid__item{% if settings.page_width > 1400 and section.settings.media_size == "small" %} product__info-wrapper--extra-padding{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
+        <section id="ProductInfo-{{ section.id }}" class="product__info-container{% if section.settings.enable_sticky_info %} product__column-sticky{% endif %}">
+          {%- assign product_form_id = 'product-form-' | append: section.id -%}
+
+          {%- for block in section.blocks -%}
+            {%- case block.type -%}
+              {%- when '@app' -%}
+                {% render block %}
+              {%- when 'text' -%}
+                <p class="product__text inline-richtext{% if block.settings.text_style == 'uppercase' %} caption-with-letter-spacing{% elsif block.settings.text_style == 'subtitle' %} subtitle{% endif %}" {{ block.shopify_attributes }}>
+                  {{- block.settings.text -}}
+                </p>
+              {%- when 'title' -%}
+                <div class="product__title" {{ block.shopify_attributes }}>
+                  <h1>{{ product.title | escape }}</h1>
+                </div>
+              {%- when 'price' -%}
+                <div id="price-{{ section.id }}" role="status" {{ block.shopify_attributes }}>
+                  {%- render 'price', product: product, use_variant: true, show_badges: true, price_class: 'price--large' -%}
+                </div>
+                {%- if product.quantity_price_breaks_configured? -%}
+                  <div class="volume-pricing-note" id="Volume-Note-{{ section.id }}">
+                    <span>{{ 'products.product.volume_pricing.note' | t }}</span>
+                  </div>
+                {%- endif -%}
+                {%- if cart.taxes_included or cart.duties_included or shop.shipping_policy.body != blank -%}
+                  <div class="product__tax caption rte">
+                    {%- if cart.duties_included and cart.taxes_included -%}
+                      {{ 'products.product.duties_and_taxes_included' | t }}
+                    {%- elsif cart.taxes_included -%}
+                      {{ 'products.product.taxes_included' | t }}
+                    {%- elsif cart.duties_included -%}
+                      {{ 'products.product.duties_included' | t }}
+                    {%- endif -%}
+                    {%- if shop.shipping_policy.body != blank -%}
+                      {{ 'products.product.shipping_policy_html' | t: link: shop.shipping_policy.url }}
+                    {%- endif -%}
+                  </div>
+                {%- endif -%}
+                <div {{ block.shopify_attributes }}>
+                  {%- assign product_form_installment_id = 'product-form-installment-' | append: section.id -%}
+                  {%- form 'product', product, id: product_form_installment_id, class: 'installment caption-large' -%}
+                    <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
+                    {{ form | payment_terms }}
+                  {%- endform -%}
+                </div>
+              {%- when 'inventory' -%}
+                <p class="product__inventory{% if block.settings.text_style == 'uppercase' %} caption-with-letter-spacing{% elsif block.settings.text_style == 'subtitle' %} subtitle{% endif %}{% if product.selected_or_first_available_variant.inventory_management != 'shopify' %} visibility-hidden{% endif %}" {{ block.shopify_attributes }} id="Inventory-{{ section.id }}" role="status">
+                  {%- if product.selected_or_first_available_variant.inventory_management == 'shopify' -%}
+                    {%- if product.selected_or_first_available_variant.inventory_quantity > 0 -%}
+                      <span class="svg-wrapper" style="color: rgb(62, 214, 96)">{{- 'icon-inventory-status.svg' | inline_asset_content -}}</span>
+                      {{ 'products.product.inventory_in_stock' | t }}
+                    {%- else -%}
+                      <span class="svg-wrapper" style="color: rgb(200, 200, 200)">{{- 'icon-inventory-status.svg' | inline_asset_content -}}</span>
+                      {{ 'products.product.inventory_out_of_stock' | t }}
+                    {%- endif -%}
+                  {%- endif -%}
+                </p>
+              {%- when 'description' -%}
+                {%- if product.description != blank -%}
+                  <div class="product__description rte quick-add-hidden" {{ block.shopify_attributes }}>
+                    {{ product.description }}
+                  </div>
+                {%- endif -%}
+              
+              {%- when 'custom_liquid' -%}
+                {%- comment -%} LÓGICA DE FICHA TÉCNICA MEJORADA PARA DESKTOP {%- endcomment -%}
+                <div class="custom-ficha-tecnica">
+                   {{ block.settings.custom_liquid }}
+                </div>
+
+              {%- when 'variant_picker' -%}
+                {% render 'product-variant-picker', product: product, block: block, product_form_id: product_form_id %}
+              {%- when 'buy_buttons' -%}
+                {%- render 'buy-buttons', block: block, product: product, product_form_id: product_form_id, section_id: section.id, show_pickup_availability: true -%}
+            {%- endcase -%}
+          {%- endfor -%}
+        </section>
+      </div>
+    </div>
+  </div>
+</product-info>
+
+{% schema %}
+{
+  "name": "t:sections.main-product.name",
+  "tag": "section",
+  "class": "section",
+  "blocks": [
+    { "type": "@app" },
+    { "type": "text", "name": "Texto", "settings": [ { "type": "inline_richtext", "id": "text", "label": "Texto" } ] },
+    { "type": "title", "name": "Título", "limit": 1 },
+    { "type": "price", "name": "Precio", "limit": 1 },
+    { "type": "sku", "name": "SKU", "limit": 1 },
+    { "type": "inventory", "name": "Inventario", "limit": 1 },
+    { "type": "quantity_selector", "name": "Selector de cantidad", "limit": 1 },
+    { "type": "variant_picker", "name": "Selector de variante", "limit": 1 },
+    { "type": "buy_buttons", "name": "Botones de compra", "limit": 1 },
+    { "type": "description", "name": "Descripción", "limit": 1 },
+    { "type": "custom_liquid", "name": "Liquid personalizado" },
+    { "type": "collapsible_tab", "name": "Pestaña colapsable" }
+  ],
+  "settings": [
+    { "type": "checkbox", "id": "enable_sticky_info", "default": true, "label": "Información pegajosa" },
+    { "type": "color_scheme", "id": "id_color_scheme", "label": "Esquema de color", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 100, "step": 4, "unit": "px", "label": "Padding superior", "default": 36 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 100, "step": 4, "unit": "px", "label": "Padding inferior", "default": 36 }
+  ]
+}
+{% endschema %}

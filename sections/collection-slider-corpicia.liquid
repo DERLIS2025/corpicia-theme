@@ -1,0 +1,398 @@
+{{ 'section-collection-slider.css' | asset_url | stylesheet_tag }}
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css " />
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js "></script>
+<script src="{{ 'collection-slider.js' | asset_url }}" defer="defer"></script>
+
+{%- style -%}
+  /* ===== MOBILE: Carrusel horizontal con tamaño fijo ===== */
+  @media (max-width: 767px) {
+    .section-{{ section.id }} {
+      overflow: hidden !important;
+    }
+    
+    .corpicia-nature-slider .page-width {
+      padding-left: 16px !important;
+      padding-right: 16px !important;
+      max-width: 100% !important;
+    }
+    
+    .corpicia-nature-slider .swiper {
+      overflow: visible !important;
+      margin-left: -16px !important;
+      margin-right: -16px !important;
+      width: calc(100% + 32px) !important;
+      padding-left: 16px !important;
+      padding-right: 16px !important;
+    }
+    
+    .section-{{ section.id }} .swiper-slide {
+      width: 160px !important;
+      flex: 0 0 160px !important;
+      margin-right: 12px !important;
+      scroll-snap-align: start !important;
+    }
+    
+    .section-{{ section.id }} .swiper-slide:last-child {
+      margin-right: 16px !important;
+    }
+    
+    .corpicia-nature-slider .swiper-controls {
+      display: none !important;
+    }
+  }
+
+  /* ===== DESKTOP: Carrusel normal ===== */
+  @media (min-width: 768px) {
+    .section-{{ section.id }} .swiper-wrapper {
+      display: flex !important;
+      flex-wrap: nowrap !important;
+    }
+    
+    .section-{{ section.id }} .swiper-slide {
+      {% assign col_desktop = section.settings.columns_desktop | default: 4 %}
+      {% assign width_percent = 100.0 | divided_by: col_desktop %}
+      width: calc({{ width_percent }}% - 20px) !important; 
+      flex: 0 0 calc({{ width_percent }}% - 20px) !important;
+      min-width: 150px !important;
+      margin-right: 20px;
+      scroll-snap-align: start !important;
+    }
+    
+    .corpicia-nature-slider .swiper { 
+      overflow: hidden !important; 
+    }
+  }
+
+  .corpicia-nature-slider .swiper-wrapper { 
+    display: flex !important; 
+    flex-wrap: nowrap !important; 
+  }
+  
+  .corpicia-nature-slider .nature-card { 
+    height: 100%; 
+    display: flex; 
+    flex-direction: column; 
+  }
+  
+  /* ===== IMAGEN CUADRADA 1:1 ===== */
+  .corpicia-nature-slider .nature-card__image-wrapper {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    border-radius: 12px;
+  }
+  
+  .corpicia-nature-slider .nature-card__image-wrapper img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .navigation-disabled .swiper-controls {
+    display: none !important;
+  }
+  
+  .collection-card-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .collection-card-link:hover {
+    opacity: 0.9;
+  }
+{%- endstyle -%}
+
+<div class="section section-{{ section.id }} corpicia-nature-slider color-{{ section.settings.color_scheme }}" style="padding-top: {{ section.settings.padding_top }}px; padding-bottom: {{ section.settings.padding_bottom }}px;">
+  <div class="page-width page-width--{{ section.settings.container }}">
+    
+    {% render 'section-heading',
+      section_settings: section.settings,
+      description_size: section.settings.text_size,
+      button_visible: true,
+      button_link: section.settings.button_link,
+      button_style: section.settings.button_style,
+      button_label: section.settings.button_label,
+      button_icon: section.settings.button_icon
+    %}
+    
+    {%- liquid
+      assign total_blocks = section.blocks.size
+      assign show_nav = false
+      if section.settings.show_navigation
+        if section.settings.navigation_threshold == 0 or total_blocks >= section.settings.navigation_threshold
+          assign show_nav = true
+        endif
+      endif
+      assign nav_class = ''
+      unless show_nav
+        assign nav_class = 'navigation-disabled'
+      endunless
+    -%}
+    
+    <div class="relative">
+      <collection-slider class="block swiper {{ nav_class }}" 
+        data-section-id="{{ section.id }}" 
+        data-autoplay="{{ section.settings.autoplay }}" 
+        data-loop="{{ section.settings.enable_loop }}"
+        data-show-navigation="{{ show_nav }}">
+        
+        <div class="swiper-wrapper py-4">
+          {%- for block in section.blocks -%}
+            {%- liquid
+              assign collection = collections[block.settings.collection]
+              
+              if block.settings.custom_link != blank
+                assign card_url = block.settings.custom_link
+              elsif collection != blank
+                assign card_url = collection.url
+              else
+                assign card_url = '#'
+              endif
+            -%}
+            
+            <div class="swiper-slide" {{ block.shopify_attributes }}>
+              <a href="{{ card_url }}" class="block no-underline text-inherit collection-card-link">
+                {% render 'card-collection-nature',
+                  collection: collection,
+                  featured_image: block.settings.image,
+                  title: block.settings.title,
+                  badge: block.settings.badge
+                %}
+              </a>
+            </div>
+          {%- endfor -%}
+        </div>
+        
+        {%- if show_nav -%}
+        <div class="swiper-controls absolute top-1/2 -translate-y-1/2 w-full flex justify-between pointer-events-none px-2 z-20">
+          <button class="swiper-button swiper-button-prev pointer-events-auto" aria-label="Anterior">
+            <svg xmlns="http://www.w3.org/2000/svg " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+          </button>
+          <button class="swiper-button swiper-button-next pointer-events-auto" aria-label="Siguiente">
+            <svg xmlns="http://www.w3.org/2000/svg " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
+        </div>
+        {%- endif -%}
+      </collection-slider>
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Slider Naturaleza",
+  "tag": "section",
+  "class": "section-collection-nature",
+  "max_blocks": 12,
+  "settings": [
+    {
+      "type": "select",
+      "id": "container",
+      "options": [
+        {"value": "full", "label": "Ancho completo"},
+        {"value": "fixed", "label": "Contenedor fijo"}
+      ],
+      "default": "fixed",
+      "label": "Ancho del contenedor"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Esquema de colores",
+      "default": "scheme-1"
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "min": 1,
+      "max": 6,
+      "step": 1,
+      "default": 4,
+      "label": "Número de columnas en escritorio"
+    },
+    {
+      "type": "header",
+      "content": "Encabezado"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "subheading",
+      "label": "Subtítulo"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "heading",
+      "default": "Colecciones",
+      "label": "Título"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "label": "Tamaño del título",
+      "default": "h2",
+      "options": [
+        {"value": "h3", "label": "Pequeño"},
+        {"value": "h2", "label": "Mediano"},
+        {"value": "h1", "label": "Grande"}
+      ]
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "Descripción"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Texto del botón"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Enlace del botón"
+    },
+    {
+      "type": "select",
+      "id": "button_style",
+      "label": "Estilo del botón",
+      "options": [
+        {"value": "btn--primary", "label": "Primario"},
+        {"value": "btn--secondary", "label": "Secundario"},
+        {"value": "btn--underline", "label": "Subrayado"}
+      ],
+      "default": "btn--primary"
+    },
+    {
+      "type": "header",
+      "content": "Carrusel"
+    },
+    {
+      "type": "checkbox",
+      "id": "autoplay",
+      "label": "Autoplay",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_loop",
+      "label": "Loop infinito",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_navigation",
+      "label": "Mostrar botones de navegación",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "navigation_threshold",
+      "min": 0,
+      "max": 12,
+      "step": 1,
+      "label": "Mostrar navegación cuando hay más de",
+      "default": 4
+    },
+    {
+      "type": "header",
+      "content": "Espaciado"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Espaciado superior",
+      "default": 60
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Espaciado inferior",
+      "default": 60
+    }
+  ],
+  "blocks": [
+    {
+      "type": "collection",
+      "name": "Colección",
+      "settings": [
+        {
+          "type": "collection",
+          "id": "collection",
+          "label": "Colección"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Imagen personalizada"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Título personalizado"
+        },
+        {
+          "type": "text",
+          "id": "badge",
+          "label": "Etiqueta destacada"
+        },
+        {
+          "type": "url",
+          "id": "custom_link",
+          "label": "Enlace personalizado",
+          "info": "Si se deja vacío, usará la URL de la colección seleccionada. Para WhatsApp: https://wa.me/595XXXXXXXX"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Slider Naturaleza",
+      "blocks": [
+        {"type": "collection"},
+        {"type": "collection"},
+        {"type": "collection"},
+        {"type": "collection"}
+      ]
+    }
+  ]
+}
+{% endschema %}
+
+<script>
+  // SOLUCIÓN DEFINITIVA: Forzar links a funcionar sin modificar el carrusel
+  document.addEventListener('DOMContentLoaded', function() {
+    // Esperar a que el carrusel se inicialice
+    setTimeout(function() {
+      const links = document.querySelectorAll('.collection-card-link');
+      
+      links.forEach(function(link) {
+        // Remover cualquier listener previo y agregar uno nuevo
+        link.addEventListener('click', function(e) {
+          // No hacer nada especial, dejar que el navegador maneje el click normalmente
+          console.log('Navegando a:', this.href);
+          // El return true permite que el navegador siga el link normalmente
+          return true;
+        }, true); // true = capture phase para asegurar que se ejecute primero
+        
+        // Asegurar que el link sea clickeable
+        link.style.cursor = 'pointer';
+        link.style.position = 'relative';
+        link.style.zIndex = '9999';
+      });
+    }, 500); // Esperar 500ms para que el carrusel termine de inicializarse
+  });
+</script>
