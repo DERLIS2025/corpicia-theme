@@ -1,0 +1,127 @@
+{%- liquid
+  if use_variant
+    assign target = product.selected_or_first_available_variant
+  else
+    assign target = product
+  endif
+
+  assign price = target.price | default: 1999
+  assign compare_at_price = target.compare_at_price 
+  assign money_price = price | money
+  assign product_title_lc = product.title | downcase
+  
+  assign is_cesped = false
+  if product_title_lc contains 'césped' or product_title_lc contains 'cesped'
+    assign is_cesped = true
+  endif
+
+  assign unidad_medida = "M² INSTALADO"
+  if product_title_lc contains 'maní' or product_title_lc contains 'mani'
+    assign unidad_medida = "LA DOCENA"
+  endif
+-%}
+
+<div class="price {%- if price_class %} {{ price_class }}{% endif -%}">
+  <div class="corpi-price-wrapper">
+    
+    {%- if compare_at_price > price -%}
+      <div class="corpi-compare-price">
+        <span class="label-contado">CONTADO: </span>
+        <s style="color: #999; font-size: 1.2rem; text-decoration: line-through;">
+          {{ compare_at_price | money }}
+        </s>
+      </div>
+    {%- endif -%}
+
+    {%- if is_cesped -%}
+      <div class="corpi-main-card">
+        <span class="corpi-label">Precio Especial</span>
+        <span class="corpi-price-display">{{ money_price }}</span>
+        <div class="corpi-divider-line"></div>
+        <span class="corpi-unit">{{ unidad_medida }}</span>
+      </div>
+    {%- else -%}
+      <div class="corpi-standard-price">
+        <span>{{ money_price }}</span>
+      </div>
+    {%- endif -%}
+
+    {%- if price_class == 'price--large' and is_cesped and product.metafields.custom.precio_1_25 != blank -%}
+      <div class="corpi-scales-container">
+        <p class="corpi-scales-title">ESCALA DE PRECIOS POR VOLUMEN</p>
+        <div class="corpi-scales-box">
+          <div class="corpi-scale-row">
+            <span>1 a 25 {% if product_title_lc contains 'mani' %}docenas{% else %}m²{% endif %}</span>
+            <strong>Gs. {{ product.metafields.custom.precio_1_25 }}</strong>
+          </div>
+          <div class="corpi-scale-row">
+            <span>26 a 50 {% if product_title_lc contains 'mani' %}docenas{% else %}m²{% endif %}</span>
+            <strong>Gs. {{ product.metafields.custom.precio_26_50 }}</strong>
+          </div>
+          <div class="corpi-scale-row corpi-row-highlight">
+            <span>Más de 50 {% if product_title_lc contains 'mani' %}docenas{% else %}m²{% endif %}</span>
+           <strong>Gs. {{ product.metafields.custom.precio_50 }}</strong>
+          </div>
+        </div>
+      </div>
+    {%- endif -%}
+  </div>
+</div>
+
+<style>
+  .corpi-price-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center; 
+    width: 100%;
+    text-align: center;
+  }
+  
+  .corpi-compare-price { 
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+  }
+  
+  .label-contado { font-size: 0.9rem; color: #888; font-weight: 600; }
+
+  .corpi-main-card {
+    text-align: center;
+    border: 2px solid #1b5e20;
+    padding: 20px 45px;
+    border-radius: 12px;
+    background: #fff;
+    display: inline-block;
+    margin: 5px 0 15px 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+  }
+  
+  .corpi-label { display: block; font-size: 0.85rem; color: #1b5e20; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+  .corpi-price-display { font-size: 3rem; font-weight: 800; color: #000; line-height: 1; display: block; }
+  .corpi-divider-line { height: 1px; background: #eee; width: 100%; margin: 12px 0; }
+  .corpi-unit { font-size: 1.2rem; color: #1b5e20; font-weight: 700; }
+
+  .corpi-standard-price { padding: 5px 0; font-size: 2.5rem; font-weight: 800; color: #1a1a1a; }
+
+  .corpi-scales-container { width: 100%; max-width: 400px; margin-top: 25px; }
+  .corpi-scales-title { font-size: 0.85rem; font-weight: 700; color: #1b5e20; margin-bottom: 12px; text-transform: uppercase; }
+  .corpi-scales-box { border: 1px solid #e0e0e0; border-radius: 10px; overflow: hidden; }
+  .corpi-scale-row { display: flex; justify-content: space-between; padding: 14px 22px; border-bottom: 1px solid #f0f0f0; }
+  .corpi-row-highlight { background: #f1f8e9; border-bottom: none; }
+  .corpi-final-tag { font-size: 1.4rem; font-weight: 800; color: #1b5e20; }
+
+  @media screen and (max-width: 749px) {
+    .corpi-price-wrapper { align-items: center; } 
+    .corpi-main-card {
+      width: 95%;
+      padding: 15px;
+      margin: 25px 0 !important;
+      box-sizing: border-box;
+    }
+    .corpi-price-display { font-size: 2.2rem !important; }
+    .corpi-standard-price { font-size: 1.8rem !important; }
+    .corpi-unit { font-size: 1rem !important; }
+  }
+</style>

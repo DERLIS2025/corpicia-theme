@@ -1,0 +1,185 @@
+{% comment %}
+  Tarjeta de colección para slider - Estilo Inverfin
+  
+  Accepts:
+  - collection: {Object} Colección de Shopify
+  - featured_image: {Object} Imagen personalizada (opcional)
+  - title: {String} Título personalizado (opcional)
+  - badge: {String} Etiqueta destacada (opcional)
+  - custom_link: {String} Enlace personalizado (opcional) - NUEVO
+  - image_ratio: {String} Proporción de imagen (adapt, 1/1, 3/4, 4/3, 16/9)
+  - image_fit: {String} Ajuste de imagen (cover, contain)
+  - rounded_image: {Boolean} Imagen redondeada
+  - title_size: {String} Tamaño del título
+  - text_alignment: {String} Alineación del texto
+  - show_underline: {Boolean} Mostrar subrayado
+{% endcomment %}
+
+{%- liquid
+  # Determinar título a mostrar
+  if title != blank
+    assign display_title = title
+  elsif collection != blank and collection.title != blank
+    assign display_title = collection.title
+  else
+    assign display_title = 'Nombre de tu colección'
+  endif
+  
+  # Determinar imagen a mostrar
+  if featured_image != blank
+    assign display_image = featured_image
+  elsif collection != blank and collection.featured_image != blank
+    assign display_image = collection.featured_image
+  else
+    assign display_image = blank
+  endif
+  
+  # NUEVO: Manejo de enlace personalizado (prioridad: custom_link > collection.url > #)
+  if custom_link != blank
+    assign card_url = custom_link
+  elsif collection != blank
+    assign card_url = collection.url
+  else
+    assign card_url = '#'
+  endif
+  
+  # Configurar aspect ratio
+  if image_ratio == 'adapt' and display_image != blank
+    assign aspect_ratio = display_image.aspect_ratio
+  elsif image_ratio == '1/1'
+    assign aspect_ratio = '1'
+  elsif image_ratio == '3/4'
+    assign aspect_ratio = '0.75'
+  elsif image_ratio == '4/3'
+    assign aspect_ratio = '1.33'
+  elsif image_ratio == '16/9'
+    assign aspect_ratio = '1.78'
+  else
+    assign aspect_ratio = '1'
+  endif
+  
+  # Valores por defecto
+  unless image_fit
+    assign image_fit = 'cover'
+  endunless
+  
+  unless title_size
+    assign title_size = 'text-lg'
+  endunless
+  
+  unless text_alignment
+    assign text_alignment = 'center'
+  endunless
+-%}
+
+<div class="collection-card-slider nature-card">
+  <a href="{{ card_url }}" class="collection-card-slider__link block group">
+    
+    <div 
+      class="collection-card-slider__image-wrapper nature-image-wrapper relative overflow-hidden mb-4 {% if rounded_image %}rounded-2xl{% endif %}"
+      style="aspect-ratio: {{ aspect_ratio }};"
+    >
+      {%- if display_image != blank -%}
+        {{ 
+          display_image 
+          | image_url: width: 800 
+          | image_tag: 
+            loading: 'lazy',
+            class: 'collection-card-slider__image w-full h-full transition-transform duration-500 group-hover:scale-105',
+            alt: display_title,
+            style: 'object-fit: ' | append: image_fit | append: ';'
+        }}
+      {%- else -%}
+        <div class="collection-card-slider__placeholder w-full h-full bg-gray-100 flex items-center justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" class="text-gray-300">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+            <polyline points="21 15 16 10 5 21"></polyline>
+          </svg>
+        </div>
+      {%- endif -%}
+      
+      {%- if badge != blank -%}
+        <span class="absolute top-2 right-2 bg-accent text-white text-xs font-bold px-2 py-1 rounded-full">
+          {{ badge }}
+        </span>
+      {%- endif -%}
+    </div>
+    
+    <div class="collection-card-slider__content nature-content text-{{ text_alignment }}">
+      <h3 class="collection-card-slider__title nature-title {{ title_size }} font-semibold leading-tight group-hover:text-accent transition-colors {% if show_underline %}underline decoration-2 underline-offset-4{% endif %}">
+        {{ display_title | escape }}
+      </h3>
+    </div>
+    
+  </a>
+</div>
+
+<style>
+  .collection-card-slider {
+    height: 100%;
+  }
+  
+  .collection-card-slider__link {
+    text-decoration: none;
+    color: inherit;
+  }
+  
+  .collection-card-slider__image-wrapper {
+    background-color: #f5f5f5;
+  }
+  
+  .collection-card-slider__image {
+    display: block;
+  }
+  
+  .collection-card-slider__placeholder {
+    min-height: 200px;
+  }
+  
+  .collection-card-slider__content {
+    padding: 0 0.5rem;
+  }
+  
+  .collection-card-slider__title {
+    margin: 0;
+    /* Truncamiento para textos largos */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-break: break-word;
+  }
+  
+  /* Tamaños de título responsive */
+  @media (max-width: 767px) {
+    .collection-card-slider__title.text-base {
+      font-size: 1rem;
+    }
+    .collection-card-slider__title.text-lg {
+      font-size: 1.125rem;
+    }
+    .collection-card-slider__title.text-xl {
+      font-size: 1.25rem;
+    }
+    .collection-card-slider__title.text-2xl {
+      font-size: 1.5rem;
+    }
+  }
+  
+  @media (min-width: 768px) {
+    .collection-card-slider__title.text-base {
+      font-size: 1.125rem;
+    }
+    .collection-card-slider__title.text-lg {
+      font-size: 1.25rem;
+    }
+    .collection-card-slider__title.text-xl {
+      font-size: 1.5rem;
+    }
+    .collection-card-slider__title.text-2xl {
+      font-size: 1.875rem;
+    }
+  }
+</style>

@@ -1,0 +1,118 @@
+{% comment %}
+  Meta-tags.liquid - Open Graph, Twitter Cards y SEO Social
+  Optimizado para Corpi & Cia - Jardinería Online Paraguay
+{% endcomment %}
+
+{% comment %} ==================== OPEN GRAPH BÁSICO ==================== {% endcomment %}
+<meta property="og:site_name" content="{{ shop.name }}">
+<meta property="og:url" content="{{ canonical_url }}">
+<meta property="og:title" content="{{ page_title | escape }}">
+<meta property="og:type" content="{% if template == 'product' %}product{% elsif template == 'article' %}article{% elsif template == 'collection' %}product.group{% else %}website{% endif %}">
+<meta property="og:description" content="{{ page_description | default: shop.description | escape }}">
+
+{% comment %} ==================== OPEN GRAPH - PRODUCTO ==================== {% endcomment %}
+{% if template == 'product' %}
+  <meta property="og:image" content="https:{{ product.featured_image | image_url: width: 1200, height: 630, crop: 'center' }}">
+  <meta property="og:image:secure_url" content="https:{{ product.featured_image | image_url: width: 1200, height: 630, crop: 'center' }}">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="{{ product.featured_image.alt | default: product.title | escape }}">
+  
+  {% comment %} Precio para Facebook/Instagram Shopping {% endcomment %}
+  <meta property="og:price:amount" content="{{ product.selected_or_first_available_variant.price | money_without_currency | remove: ',' }}">
+  <meta property="og:price:currency" content="{{ shop.currency }}">
+  <meta property="product:availability" content="{% if product.selected_or_first_available_variant.available %}in stock{% else %}out of stock{% endif %}">
+  <meta property="product:condition" content="new">
+  <meta property="product:retailer_item_id" content="{{ product.selected_or_first_available_variant.sku | default: product.selected_or_first_available_variant.id }}">
+  
+  {% comment %} Marca y categoría {% endcomment %}
+  <meta property="product:brand" content="{{ shop.name | escape }}">
+  {% if product.collections.first %}
+    <meta property="product:category" content="{{ product.collections.first.title | escape }}">
+  {% endif %}
+
+{% comment %} ==================== OPEN GRAPH - ARTÍCULO (BLOG) ==================== {% endcomment %}
+{% elsif template == 'article' %}
+  <meta property="og:image" content="https:{{ article.image | image_url: width: 1200, height: 630, crop: 'center' }}">
+  <meta property="og:image:secure_url" content="https:{{ article.image | image_url: width: 1200, height: 630, crop: 'center' }}">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="{{ article.image.alt | default: article.title | escape }}">
+  <meta property="article:published_time" content="{{ article.published_at | date: '%Y-%m-%dT%H:%M:%SZ' }}">
+  <meta property="article:modified_time" content="{{ article.updated_at | date: '%Y-%m-%dT%H:%M:%SZ' }}">
+  <meta property="article:author" content="{{ article.author | escape }}">
+  {% for tag in article.tags limit: 5 %}
+    <meta property="article:tag" content="{{ tag | escape }}">
+  {% endfor %}
+
+{% comment %} ==================== OPEN GRAPH - COLECCIÓN ==================== {% endcomment %}
+{% elsif template == 'collection' and collection.image %}
+  <meta property="og:image" content="https:{{ collection.image | image_url: width: 1200, height: 630, crop: 'center' }}">
+  <meta property="og:image:secure_url" content="https:{{ collection.image | image_url: width: 1200, height: 630, crop: 'center' }}">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="{{ collection.image.alt | default: collection.title | escape }}">
+
+{% comment %} ==================== OPEN GRAPH - DEFAULT (HOME/PÁGINAS) ==================== {% endcomment %}
+{% else %}
+  {% if settings.share_image %}
+    <meta property="og:image" content="https:{{ settings.share_image | image_url: width: 1200, height: 630, crop: 'center' }}">
+    <meta property="og:image:secure_url" content="https:{{ settings.share_image | image_url: width: 1200, height: 630, crop: 'center' }}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="{{ settings.share_image.alt | default: shop.name | escape }}">
+  {% elsif shop.logo %}
+    <meta property="og:image" content="https:{{ shop.logo | image_url: width: 1200 }}">
+    <meta property="og:image:secure_url" content="https:{{ shop.logo | image_url: width: 1200 }}">
+  {% endif %}
+{% endif %}
+
+{% comment %} ==================== TWITTER CARD ==================== {% endcomment %}
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{ page_title | escape }}">
+<meta name="twitter:description" content="{{ page_description | default: shop.description | escape }}">
+
+{% if template == 'product' %}
+  <meta name="twitter:image" content="https:{{ product.featured_image | image_url: width: 1200, height: 600, crop: 'center' }}">
+  <meta name="twitter:image:alt" content="{{ product.featured_image.alt | default: product.title | escape }}">
+  <meta name="twitter:label1" content="Precio">
+  <meta name="twitter:data1" content="{{ product.selected_or_first_available_variant.price | money }}">
+  <meta name="twitter:label2" content="Disponibilidad">
+  <meta name="twitter:data2" content="{% if product.selected_or_first_available_variant.available %}En stock{% else %}Agotado{% endif %}">
+  
+{% elsif template == 'article' and article.image %}
+  <meta name="twitter:image" content="https:{{ article.image | image_url: width: 1200, height: 600, crop: 'center' }}">
+  <meta name="twitter:image:alt" content="{{ article.image.alt | default: article.title | escape }}">
+  
+{% elsif template == 'collection' and collection.image %}
+  <meta name="twitter:image" content="https:{{ collection.image | image_url: width: 1200, height: 600, crop: 'center' }}">
+  <meta name="twitter:image:alt" content="{{ collection.image.alt | default: collection.title | escape }}">
+  
+{% else %}
+  {% if settings.share_image %}
+    <meta name="twitter:image" content="https:{{ settings.share_image | image_url: width: 1200, height: 600, crop: 'center' }}">
+    <meta name="twitter:image:alt" content="{{ settings.share_image.alt | default: shop.name | escape }}">
+  {% elsif shop.logo %}
+    <meta name="twitter:image" content="https:{{ shop.logo | image_url: width: 1200 }}">
+  {% endif %}
+{% endif %}
+
+{% comment %} ==================== META ADICIONALES PARA WHATSAPP ==================== {% endcomment %}
+{% comment %} WhatsApp usa Open Graph, pero estas optimizaciones ayudan {% endcomment %}
+
+{% if template == 'product' %}
+  {% comment %} Imagen cuadrada para preview de WhatsApp {% endcomment %}
+  <meta property="og:image" content="https:{{ product.featured_image | image_url: width: 400, height: 400, crop: 'center' }}">
+  
+  {% comment %} Descripción corta para preview {% endcomment %}
+  {% assign whatsapp_description = product.description | strip_html | truncate: 150 %}
+  <meta property="og:description" content="{{ whatsapp_description | escape }} - Consultá por WhatsApp 📱 +595992588770">
+{% endif %}
+
+{% comment %} ==================== IDIOMA Y LOCALIZACIÓN ==================== {% endcomment %}
+<meta property="og:locale" content="es_PY">
+
+{% comment %} ==================== FACEBOOK APP ID (Opcional) ==================== {% endcomment %}
+{% comment %} Descomenta si tienes Facebook App ID para Insights
+<meta property="fb:app_id" content="TU_APP_ID">
+{% endcomment %}

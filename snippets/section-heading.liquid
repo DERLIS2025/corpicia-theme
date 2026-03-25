@@ -1,0 +1,21 @@
+<div class="section-header text-center mb-8">
+  {%- if section_settings.subheading != blank -%}
+    <p class="text-sm uppercase tracking-wider mb-2 opacity-70">{{ section_settings.subheading }}</p>
+  {%- endif -%}
+  {%- if section_settings.heading != blank -%}
+    <h2 class="{{ section_settings.heading_size | default: 'h2' }} mb-4">{{ section_settings.heading }}</h2>
+  {%- endif -%}
+  {%- if section_settings.description != blank -%}
+    <div class="text-base mb-6 max-w-2xl mx-auto">{{ section_settings.description }}</div>
+  {%- endif -%}
+  {%- if button_label != blank -%}
+    <a href="{{ button_link }}" class="btn {{ button_style }}">{{ button_label }}</a>
+  {%- endif -%}
+</div>
+
+<style>
+  .section-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+</style>

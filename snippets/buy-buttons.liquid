@@ -1,0 +1,58 @@
+<div {{ block.shopify_attributes }}>
+  {%- if product != blank -%}
+    <div class="product-form__buttons">
+      
+      {% comment %} BOTÓN DE WHATSAPP ESTILO INVERFIN {% endcomment %}
+      <a href="https://wa.me/595992588770?text=Hola%20Corpi%20%26%20Cia%20te%20escribo%20desde%20la%20web,%20estoy%20interesado%20en%20el%20producto:%20{{ product.title | url_param_escape }}" 
+         target="_blank" 
+         style="
+           display: flex;
+           justify-content: center;
+           align-items: center;
+           text-decoration: none;
+           background-color: #1DA630;
+           color: white;
+           padding: 12px 20px;
+           border-radius: 5px;
+           font-weight: bold;
+           font-size: 15px;
+           text-transform: uppercase;
+           width: 100%;
+           border: none;
+           box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+           transition: background 0.3s ease;
+         "
+         onmouseover="this.style.backgroundColor='#128C7E'"
+         onmouseout="this.style.backgroundColor='#25d366'">
+        
+        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" 
+             style="width: 25px; height: 25px; margin-right: 12px; border: none;">
+        HABLAR CON UN ASESOR
+      </a>
+
+      {%- if show_pickup_availability -%}
+        {{ 'component-pickup-availability.css' | asset_url | stylesheet_tag }}
+        {%- assign pick_up_availabilities = product.selected_or_first_available_variant.store_availabilities | where: 'pick_up_enabled', true -%}
+        <pickup-availability class="product__pickup-availabilities no-js-hidden"
+          {% if product.selected_or_first_available_variant.available and pick_up_availabilities.size > 0 %} available{% endif %}
+          data-base-url="{{ shop.url }}{{ routes.root_url }}"
+          data-variant-id="{{ product.selected_or_first_available_variant.id }}"
+          data-has-only-default-variant="{{ product.has_only_default_variant }}"
+        >
+          <template>
+            <p class="caption-large">{{ 'products.product.pickup_availability.error' | t }}</p>
+          </template>
+        </pickup-availability>
+      {%- endif -%}
+    </div>
+  {%- endif -%}
+</div>
+
+<style>
+  /* OCULTA LOS BOTONES ORIGINALES DE COMPRA */
+  .product-form__submit, 
+  .shopify-payment-button,
+  .product-form__input--quantity {
+    display: none !important;
+  }
+</style>
